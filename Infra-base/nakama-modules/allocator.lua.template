@@ -1,0 +1,59 @@
+local nk = require("nakama")
+
+local function allocate_and_notify(context, matched_users)
+    nk.logger_info("MATCH FOUND → Requesting Agones Allocation")
+
+    local url = "http://10.109.96.184:443/gameserverallocation"
+    local headers = { ["Content-Type"] = "application/json" }
+    local body = nk.json_encode({
+        namespace = "default", -- Change this to "{{NAMESPACE}}" if your GS are in different K8s namespaces
+        scheduling = "Packed",
+        selectors = {
+            {
+                matchLabels = {
+                    ["agones.dev/fleet"] = "fleet-{{NAMESPACE}}"
+                }
+            }
+        },
+        metadata = { 
+            labels = { ["agones.dev/fleet"] = "fleet-{{NAMESPACE}}" } 
+        }
+    })
+
+    local results = { nk.http_request(url, "POST", headers, body) }
+    
+    local success = results[1]
+    local http_code = nil
+    local response_body = nil
+
+    for i, v in ipairs(results) do
+        if type(v) == "number" then http_code = v end
+        if i > 1 and type(v) == "string" then response_body = v end
+    end
+
+    if success and http_code == 200 and response_body then
+        local status, data = pcall(nk.json_decode, response_body)
+        if status and data.address then
+            local content = {
+                host = data.address,
+                port = data.ports[1].port,
+                game_server_name = data.gameServerName
+            }
+            for _, user in ipairs(matched_users) do
+                nk.notification_send(user.presence.user_id, "AgonesReady", content, 1, nil, true)
+            end
+            nk.logger_info("SUCCESS: Allocated " .. data.gameServerName)
+            return nil
+        end
+    end
+
+    if http_code == 429 then
+        nk.logger_error("AGONES CAPACITY: No Ready GameServers available for {{NAMESPACE}}")
+    else
+        nk.logger_error(("AGONES FAILURE: Status %s. Body: %s"):format(tostring(http_code), tostring(response_body)))
+    end
+
+    return nil
+end
+
+nk.register_matchmaker_matched(allocate_and_notify)

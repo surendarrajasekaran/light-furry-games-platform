@@ -1,0 +1,21 @@
+# Feature Environment Configuration
+name: feature-matchmaker
+
+# Nakama Settings
+nakama:
+  version: dev4
+  replicas: 1
+  # The DNS prefix will be derived from 'name' (e.g., feature-x.yourdomain.com)
+
+# Agones Game Server Settings
+gameserver:
+  image: us-docker.pkg.dev/agones-images/examples/simple-game-server:0.41
+  replicas: 3
+
+# Matchmaking Logic Constraints
+# These can be injected into your Lua scripts or Fleet scaling settings
+matchmaker:
+  min_players: 2
+  max_players: 4
+  tick_rate: 10
+domainname: "lf.games.com"  # Set this to your actual domain for proper DNS configuration
