@@ -1,0 +1,52 @@
+# --- IDEs and OS ---
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
+
+# --- Node.js / Dependencies ---
+# Added for any JS tooling, linting, or CDK usage
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm/
+
+# --- Temporary/Generated Manifests ---
+# Prevents dynamic files from being committed
+values.yaml
+fleet.yaml
+fleet-tmp.yaml
+tmp-values.yaml
+*-generated.yaml
+
+# --- Helm ---
+charts/
+tmp/
+*.tgz
+.helm/
+
+# --- Docker & Build Artifacts ---
+.docker_temp/
+*.tar
+
+# --- Nakama & Database Local Data ---
+nakama/data/
+/data/
+*.log
+
+# --- Environment & Secrets ---
+.env
+.env.local
+.secret*
+kubeconfig
+*.pem
+*.crt
+*.key
+
+# --- Python / Scripting Junk ---
+__pycache__/
+*.py[cod]
+venv/
+.venv/
