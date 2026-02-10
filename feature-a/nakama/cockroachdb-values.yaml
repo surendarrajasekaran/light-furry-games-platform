@@ -1,0 +1,52 @@
+workload:
+  enabled: true
+  kind: StatefulSet
+  replicaCount: 1
+
+image:
+  repository: cockroachdb/cockroach
+  tag: latest-v24.1
+
+command:
+  - cockroach
+  - start-single-node
+  - --insecure
+  - --store=attrs=ssd,path=/var/lib/cockroach/
+  - --advertise-addr=cockroachdb
+
+
+containerPorts:
+  - name: grpc
+    containerPort: 26257
+  - name: http
+    containerPort: 8080
+
+service:
+  enabled: true
+  ports:
+    - name: grpc
+      port: 26257
+      targetPort: 26257
+    - name: http
+      port: 8080
+      targetPort: 8080
+
+volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 10Gi
+
+volumeMounts:
+  - name: data
+    mountPath: /var/lib/cockroach
+
+readinessProbe:
+  httpGet:
+    path: /health?ready=1
+    port: 8080
+  initialDelaySeconds: 10
+  periodSeconds: 5

@@ -1,0 +1,71 @@
+workload:
+  enabled: true
+  replicaCount: 1
+
+image:
+  repository: surendar/nakama
+  tag: dev4
+  pullPolicy: IfNotPresent
+initContainers:
+  - name: migrate
+    image: surendar/nakama:dev4
+    command:
+      - /bin/sh
+      - -ec
+      - |
+        until /nakama/nakama migrate up --database.address root@cockroachdb-nucleus:26257; do
+          echo "waiting for database...";
+          sleep 3;
+        done
+
+command:
+  - /nakama/nakama
+
+args:
+  - --name
+  - nakama1
+  - --database.address
+  - root@cockroachdb-nucleus:26257
+  - --logger.level
+  - DEBUG
+  - --session.token_expiry_sec
+  - "7200"
+  - --metrics.prometheus_port
+  - "9100"
+
+
+containerPorts:
+  - name: grpc
+    containerPort: 7349
+  - name: http
+    containerPort: 7350
+  - name: console
+    containerPort: 7351
+  - name: metrics
+    containerPort: 9100
+
+service:
+  enabled: true
+  ports:
+    - name: grpc
+      port: 7349
+    - name: http
+      port: 7350
+    - name: console
+      port: 7351
+
+livenessProbe:
+  exec:
+    command:
+      - /nakama/nakama
+      - healthcheck
+  initialDelaySeconds: 20
+  periodSeconds: 10
+
+readinessProbe:
+  exec:
+    command:
+      - /nakama/nakama
+      - healthcheck
+  initialDelaySeconds: 10
+  periodSeconds: 5
