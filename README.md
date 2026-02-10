@@ -80,33 +80,40 @@ That’s it.
 ## Step 1 – Create a feature folder
 
 ```
-features/<your-feature>/
+bundles/<your-feature>/
 ```
 
 Example:
 
 ```
-features/rummy-v2/
+bundles/rummy-v2/
 ```
 
 ---
 
-## Step 2 – Add `platform.yaml`
+## Step 2 – Add `config.yaml`
 
 Example:
 
 ```yaml
-name: rummy-v2
-namespace: rummy-v2
+# Feature Environment Configuration
+name: feature-matchmaker
 
-fleet:
-  replicas: 5
-  image: myrepo/rummy-server:latest
-  containerPort: 7777
+# Nakama Settings
+nakama:
+  version: dev4
+  replicas: 1
+ 
+# Agones Game Server Settings
+gameserver:
+  image: us-docker.pkg.dev/agones-images/examples/simple-game-server:0.41
+  replicas: 3
 
-match:
-  minPlayers: 2
-  maxPlayers: 2
+matchmaker:
+  min_players: 2
+  max_players: 4
+  tick_rate: 10
+domainname: "lf.games.com" 
 ```
 
 ---
@@ -127,7 +134,8 @@ When Jenkins runs:
 ✅ cockroach installed  
 ✅ nakama installed  
 ✅ prometheus installed  
-✅ lua scripts mounted  
+✅ lua scripts mounted 
+✅ DNS ready   
 ✅ fleet created  
 ✅ scaling configured  
 ✅ services ready  
@@ -143,7 +151,7 @@ You receive a working multiplayer backend in minutes.
 Port forward Nakama:
 
 ```bash
-kubectl port-forward -n <namespace> svc/nakama-nucleus 7350:7350
+Point DNS to APK / Client
 ```
 
 Run your client.
@@ -163,9 +171,9 @@ CONNECT TO: <gameserver-ip>:<port>
 ```
 light-furry-games-platform/
 │
-├── nucleus/                 # Base helm chart shared by all environments
+├── infra-base/                 # Base helm chart shared by all environments
 │
-├── features/
+├── bundles/
 │   ├── feature-a/
 │   │   └── platform.yaml
 │   ├── feature-b/
