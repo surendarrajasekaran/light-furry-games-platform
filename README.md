@@ -1,4 +1,4 @@
-# 🚀 Light Furry Games Platform
+# 🚀 Game Platform
 ### Self-Service Multiplayer Infrastructure (Nakama + Agones + Kubernetes)
 
 ---
